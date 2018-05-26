@@ -34,6 +34,7 @@ export default class CardStack extends Component {
       cards: [],
       touchStart: 0,
     };
+    this.slideGesture = false
     this.distance = this.constructor.distance;
   }
 
@@ -52,6 +53,18 @@ export default class CardStack extends Component {
         const dragDistance = this.distance((horizontalSwipe) ? gestureState.dx : 0, (verticalSwipe) ? gestureState.dy : 0 );
         this.state.dragDistance.setValue(dragDistance);
         this.state.drag.setValue({x: (horizontalSwipe) ? gestureState.dx : 0, y: (verticalSwipe) ? gestureState.dy : 0});
+
+        const onTapCardDeadZone = 5;
+
+        //Catch tap events
+        if (
+          gestureState.dx < -onTapCardDeadZone ||
+          gestureState.dx > onTapCardDeadZone ||
+          gestureState.dy < -onTapCardDeadZone ||
+          gestureState.dy > onTapCardDeadZone
+        ) {
+          this.slideGesture = true;
+        }
       },
       onPanResponderTerminationRequest: (evt, gestureState) => true,
       onPanResponderRelease: (evt, gestureState) => {
@@ -111,6 +124,10 @@ export default class CardStack extends Component {
         {
           this._resetCard();
         }
+        if (!this.slideGesture && swipeDuration < 150) {
+          this.props.onTap(this.state.sindex - 2);
+        }
+        this.slideGesture = false;
       },
       onPanResponderTerminate: (evt, gestureState) => {
       },
@@ -440,6 +457,7 @@ CardStack.propTypes = {
   horizontalSwipe: PropTypes.bool,
   horizontalThreshold: PropTypes.number,
   outputRotationRange: PropTypes.array,
+  onTap: PropTypes.func
 
 }
 
